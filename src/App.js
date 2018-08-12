@@ -1,4 +1,8 @@
 import React from 'react';
+import { Router, Route, Switch, NavLink } from "react-router-dom";
+import { createBrowserHistory } from "history";
+
+import Membres from "./components/membres/Membres.jsx";
 
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -15,14 +19,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Collapse from '@material-ui/core/Collapse';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import DraftsIcon from '@material-ui/icons/Drafts';
 import SendIcon from '@material-ui/icons/Send';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
 
+const hist = createBrowserHistory();
 const drawerWidth = 230;
 
 const styles = {
@@ -42,6 +43,11 @@ const styles = {
   },
   drawerStyle: {
     width: drawerWidth,
+  },
+  mainContainer: {
+    marginLeft: drawerWidth + 16,
+    marginRight: 16,
+    marginTop: 21
   }
 };
 
@@ -69,84 +75,87 @@ class App extends React.Component {
     const open = Boolean(anchorEl);
 
     return (
-      <div className={classes.root}>
-        <AppBar position="static"
-          className={classes.appbar}>
-          <Toolbar>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="title" color="inherit" className={classes.flex}>
-              Photos
-            </Typography>
-            {auth && (
-              <div>
-                <IconButton
-                  aria-owns={open ? 'menu-appbar' : null}
-                  aria-haspopup="true"
-                  onClick={this.handleMenu}
-                  color="inherit"
-                >
-                  <AccountCircle />
-                </IconButton>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  open={open}
-                  onClose={this.handleClose}
-                >
-                  <MenuItem onClick={this.handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={this.handleClose}>My account</MenuItem>
-                </Menu>
-              </div>
-            )}
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent" classes={{paper: classes.drawerStyle}}>
-          <List
-            component="nav"
-            subheader={<ListSubheader component="div">Nested List Items</ListSubheader>}
-          >
-            <ListItem button>
-              <ListItemIcon>
-                <SendIcon />
-              </ListItemIcon>
-              <ListItemText inset primary="Sent mail" />
-            </ListItem>
-            <ListItem button>
-              <ListItemIcon>
-                <DraftsIcon />
-              </ListItemIcon>
-              <ListItemText inset primary="Drafts" />
-            </ListItem>
-            <ListItem button onClick={this.handleClick}>
-              <ListItemIcon>
-                <InboxIcon />
-              </ListItemIcon>
-              <ListItemText inset primary="Inbox" />
-              {this.state.open ? <ExpandLess /> : <ExpandMore />}
-            </ListItem>
-            <Collapse in={this.state.open} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItem button className={classes.nested}>
+      <Router history={hist}>
+        <div className={classes.root}>
+          <AppBar position="static"
+            className={classes.appbar}>
+            <Toolbar>
+              <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="title" color="inherit" className={classes.flex}>
+                Photos
+              </Typography>
+              {auth && (
+                <div>
+                  <IconButton
+                    aria-owns={open ? 'menu-appbar' : null}
+                    aria-haspopup="true"
+                    onClick={this.handleMenu}
+                    color="inherit"
+                  >
+                    <AccountCircle />
+                  </IconButton>
+                  <Menu
+                    id="menu-appbar"
+                    anchorEl={anchorEl}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    open={open}
+                    onClose={this.handleClose}
+                  >
+                    <MenuItem onClick={this.handleClose}>Profile</MenuItem>
+                    <MenuItem onClick={this.handleClose}>My account</MenuItem>
+                  </Menu>
+                </div>
+              )}
+            </Toolbar>
+          </AppBar>
+          <Drawer variant="permanent" classes={{paper: classes.drawerStyle}}>
+            <List
+              component="nav"
+              subheader={<ListSubheader component="div">Nested List Items</ListSubheader>}>
+              <NavLink to="/employes">
+                <ListItem button>
                   <ListItemIcon>
-                    <StarBorder />
+                    <SendIcon />
                   </ListItemIcon>
-                  <ListItemText inset primary="Starred" />
+                  <ListItemText inset primary="Employés" />
                 </ListItem>
-              </List>
-            </Collapse>
-          </List>
-        </Drawer>
-      </div>
+              </NavLink>
+              <NavLink to="/membres">
+                <ListItem button>
+                  <ListItemIcon>
+                    <DraftsIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Membres" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/depannages">
+                <ListItem button>
+                  <ListItemIcon>
+                    <InboxIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Dépannages" />
+                </ListItem>
+              </NavLink>
+            </List>
+          </Drawer>
+          <div className={classes.mainContainer} >
+            <Switch>
+              <Route path="/employes" />
+              <Route path="/membres" component={Membres} />
+              <Route path="/depannages" />
+            </Switch>
+          </div>
+        </div>
+      </Router>
     );
   }
 }
