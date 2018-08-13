@@ -1,56 +1,171 @@
-import React, {Component} from "react";
+import React from "react";
 
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
+import { withStyles } from '@material-ui/core/styles';
+import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
-import FormGroup from "@material-ui/core/FormGroup";
+import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import Collapse from "@material-ui/core/Collapse";
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
 import Checkbox from "@material-ui/core/Checkbox";
 import Button from "@material-ui/core/Button";
-import Switch from "@material-ui/core/Switch";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Menu from "@material-ui/core/Menu";
+import Select from '@material-ui/core/Select';
 import MenuItem from "@material-ui/core/MenuItem";
-import Chip from "@material-ui/core/Chip";
-import IconButton from "@material-ui/core/IconButton";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import InputLabel from '@material-ui/core/InputLabel';
 
-export default class NewFieldForm extends Component {
+const styles = {
+  formControl: {
+    minWidth: 120,
+  },
+};
+
+class Form extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    let values = this.props.values;
+
+    this.state = {
+      values: {...values}
+    };
   }
 
   handleChange(event) {
-    this.setState({[event.target.name]:event.target.name})
+    let values = this.state.values;
+    values[event.target.name] = event.target.value;
+    this.setState(values);
   }
 
-  textField(field) {
+  handleCheck(event) {
+    let values = this.state.values;
+    values[event.target.name] = event.target.checked;
+    this.setState(values);
+  }
+
+  textField(field, classes) {
     return (
-      <TextField name={field.name} onChange={this.handleChange.bind(this)} />
-    )
+      <FormControl className={classes.formControl}>
+        <TextField
+          id={field.name}
+          name={field.name}
+          label={field.label}
+          value={this.state.values[field.name]}
+          onChange={this.handleChange.bind(this)}
+          type={field.type}
+          fullWidth />
+      </FormControl>
+    );
+  }
+
+  selectField(field, classes) {
+    return (
+      <FormControl className={classes.formControl}>
+        <InputLabel htmlFor={field.name}>{field.label}</InputLabel>
+        <Select
+          value={this.state.values[field.name]}
+          name={this.state.values[field.name]}
+          inputProps={{
+            id: field.name
+          }}>
+          {field.items.map((item)=> {
+            return <MenuItem key={item.value} value={item.value}>{item.label}</MenuItem>;
+          })}
+        </Select>
+      </FormControl>
+    );
+  }
+
+  checkbox(field, classes) {
+    return (
+      <FormControl className={classes.formControl}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              name={field.name}
+              checked={this.state.values[field.name]}
+              onChange={this.handleCheck.bind(this)}
+            />
+          }
+          label={field.label}
+        />
+      </FormControl>
+    );
+  }
+
+  radioGroup(field, classes) {
+    return (
+      <FormControl className={classes.formControl}>
+        <RadioGroup
+          name={field.name}
+          onChange={this.handleChange.bind(this)}
+          value={this.state.values[field.name]}>
+          {field.items.map((item)=>{
+            return (
+              <FormControlLabel
+                key={item.value}
+                control={
+                  <Radio />
+                }
+                label={item.label}
+                value={item.value}
+              />
+            );
+          })}
+        </RadioGroup>
+      </FormControl>
+    );
+  }
+
+  submitButton(field) {
+    return (
+      <Button type="submit" onClick={this.submit.bind(this)} >{field.label}</Button>
+    );
+  }
+
+  field(field, classes) {
+    switch (field.type) {
+    case "date":
+    case "number":
+    case "text":
+      return this.textField(field, classes);
+    case "select":
+      return this.selectField(field, classes);
+    case "checkbox":
+      return this.checkbox(field, classes);
+    case "submit":
+      return this.submitButton(field, classes);
+    case "radio":
+      return this.radioGroup(field, classes);
+    default:
+      return <div>Ce type d'input n'est pas pris en charge</div>;
+    }
   }
 
   submit() {
-
+    this.props.onSubmit(this.state.values);
   }
 
   render() {
-    var style = {};
+    const { classes } = this.props;
 
     return (
-      <form onSubmit={this.submit()}>
-        {this.props.fields.map((field, index)=>{
-          return this.textField({name:"test"})
+      <Grid container spacing={16}>
+        {this.props.fields.map((field)=>{
+          if (!field.options) {
+            field.options = {};
+          }
+          if (!field.width) {
+            field.width = {xs:12};
+          }
+          return (
+            <Grid key={field.name} item {...field.width}>
+              {this.field(field, classes)}
+            </Grid>
+          );
         })}
-      </form>
+      </Grid>
     );
   }
 }
+
+export default withStyles(styles)(Form);
