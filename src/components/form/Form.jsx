@@ -33,14 +33,12 @@ class Form extends React.Component {
   handleChange(event) {
     let values = this.state.values;
     values[event.target.name] = event.target.value;
-    this.props.onChange(values);
     this.setState(values);
   }
 
   handleCheck(event) {
     let values = this.state.values;
     values[event.target.name] = event.target.checked;
-    this.props.onChange(values);
     this.setState(values);
   }
 

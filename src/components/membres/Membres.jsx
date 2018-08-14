@@ -46,6 +46,8 @@ class Membres extends React.Component {
   constructor() {
     super();
 
+    socket.emit("get-liste-clients");
+
     this.state = {
       renouvellementSelectionne: {},
       membreSelectionne: {},
@@ -54,11 +56,10 @@ class Membres extends React.Component {
   }
 
   submit(values) {
-    console.log(values);
     if (this.state.membreSelectionne.id) {
-      socket.emit("");
+      socket.emit("modifier-membre");
     } else {
-      this.setState({renouvellement: !this.state.renouvellement, infosMembre: values});
+      this.setState({renouvellement: true, infosMembre: values});
     }
   }
 
@@ -66,8 +67,13 @@ class Membres extends React.Component {
     this.setState({renouvellement: !this.state.renouvellement});
   }
 
-  enregistrerRenouvellement() {
-
+  enregistrerRenouvellement(values) {
+    if (this.state.membreSelectionne.id) {
+      socket.emit("renouvellement", this.state.membreSelectionne.id, values);
+    } else {
+      socket.emit("nouveau-membre", this.state.infosMembre, values);
+    }
+    this.setState({renouvellement: false});
   }
 
   render() {
@@ -77,25 +83,26 @@ class Membres extends React.Component {
       {name: "prenom", label: "Prénom", type: "text", width:{xs: 4}},
       {name: "nom", label: "Nom", type: "text", width:{xs: 4}},
       {name: "sexe", label: "Sexe", type: "select", width:{xs: 2}, items: [
-        {label: "Homme", value: "Homme"},
-        {label: "Femme", value: "Femme"},
-        {label: "Autre", value: "Autre"}
+        {label: "Homme", value: "H"},
+        {label: "Femme", value: "F"},
+        {label: "Autre", value: "A"}
       ]},
       {name: "date_naissance", label: "Date de naissance", type: "date", width: {xs: 2}},
       {name: "adresse", label: "Adresse", type: "text", width:{xs: 4}},
+      {name: "appartement", label: "Appartement", type: "number", width:{xs: 1}},
       {name: "code_postal", label: "Code postal", type: "text", width: {xs:2}},
       {name: "ville", label: "Ville", type: "text", width: {xs:3}},
-      {name: "province", label: "Province", type: "select", width: {xs:3}, items: provinces},
+      {name: "province", label: "Province", type: "select", width: {xs:2}, items: provinces},
       {name: "telephone", label: "Téléphone", type: "text", width: {xs: 4}},
       {name: "telephone_alt", label: "Téléphone alternatif", type: "text", width: {xs: 4}},
       {name: "courriel", label: "Courriel", type: "text", width: {xs: 4}},
       {name: "info_poste", label: "Poste", type: "checkbox", width: {xs: 3}},
       {name: "info_courriel", label: "Courriel", type: "checkbox", width: {xs: 3}},
       {name: "actif", label: "Actif", type: "checkbox", width: {xs: 2}},
-      {name: "Militant", label: "Courriel", type: "checkbox", width: {xs: 2}},
-      {name: "radioTest", label: "type", type: "select", width:{xs:2}, items: [
-        {label: "Régulier", value: "regulier"},
-        {label: "Sympathisant", value: "sympathisant"}
+      {name: "militant", label: "Militant", type: "checkbox", width: {xs: 2}},
+      {name: "regulier", label: "Type", type: "select", width:{xs:2}, items: [
+        {label: "Régulier", value: "TRUE"},
+        {label: "Sympathisant", value: "FALSE"}
       ]},
       {name: "commentaires", label: "Commentaires", type: "text", options: {multiline: true, rows: 4}},
       {type: "submit", label: "Enregistrer", width: {xs: 2}},
@@ -140,7 +147,7 @@ class Membres extends React.Component {
         </Grid>
         <Grid item xs={2}>
           <Card >
-            <CardHeader title="Renouvellements du membre" onSubmit={this.submit.bind(this)} />
+            <CardHeader title="Renouvellements du membre" />
             <CardContent>
               <Button onClick={this.toggleDialog.bind(this)}>Renouvellement</Button>
             </CardContent>
@@ -148,7 +155,7 @@ class Membres extends React.Component {
         </Grid>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title="Liste des membres" onSubmit={this.submit.bind(this)} />
+            <CardHeader title="Liste des membres" />
             <CardContent>
               {/*<Form fields={fields} />*/}
             </CardContent>
