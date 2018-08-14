@@ -15,7 +15,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 
 const styles = {
   formControl: {
-    minWidth: 120,
+    width: "100%"
   },
 };
 
@@ -33,12 +33,14 @@ class Form extends React.Component {
   handleChange(event) {
     let values = this.state.values;
     values[event.target.name] = event.target.value;
+    this.props.onChange(values);
     this.setState(values);
   }
 
   handleCheck(event) {
     let values = this.state.values;
     values[event.target.name] = event.target.checked;
+    this.props.onChange(values);
     this.setState(values);
   }
 
@@ -52,6 +54,7 @@ class Form extends React.Component {
           value={this.state.values[field.name]}
           onChange={this.handleChange.bind(this)}
           type={field.type}
+          {...field.options}
           fullWidth />
       </FormControl>
     );
@@ -62,13 +65,14 @@ class Form extends React.Component {
       <FormControl className={classes.formControl}>
         <InputLabel htmlFor={field.name}>{field.label}</InputLabel>
         <Select
-          value={this.state.values[field.name]}
-          name={this.state.values[field.name]}
+          value={this.state.values[field.name] || ""}
+          name={field.name}
+          onChange={this.handleChange.bind(this)}
           inputProps={{
             id: field.name
           }}>
           {field.items.map((item)=> {
-            return <MenuItem key={item.value} value={item.value}>{item.label}</MenuItem>;
+            return <MenuItem key={item.label + item.value} value={item.value}>{item.label}</MenuItem>;
           })}
         </Select>
       </FormControl>
@@ -116,6 +120,12 @@ class Form extends React.Component {
     );
   }
 
+  button(field) {
+    return (
+      <Button onClick={field.onClick.bind(this)} >{field.label}</Button>
+    );
+  }
+
   submitButton(field) {
     return (
       <Button type="submit" onClick={this.submit.bind(this)} >{field.label}</Button>
@@ -132,6 +142,8 @@ class Form extends React.Component {
       return this.selectField(field, classes);
     case "checkbox":
       return this.checkbox(field, classes);
+    case "button":
+      return this.button(field, classes);
     case "submit":
       return this.submitButton(field, classes);
     case "radio":
@@ -158,7 +170,7 @@ class Form extends React.Component {
             field.width = {xs:12};
           }
           return (
-            <Grid key={field.name} item {...field.width}>
+            <Grid key={field.name + field.label} item {...field.width}>
               {this.field(field, classes)}
             </Grid>
           );
