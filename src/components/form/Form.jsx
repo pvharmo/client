@@ -12,6 +12,11 @@ import Button from "@material-ui/core/Button";
 import Select from '@material-ui/core/Select';
 import MenuItem from "@material-ui/core/MenuItem";
 import InputLabel from '@material-ui/core/InputLabel';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 const styles = {
   formControl: {
@@ -26,8 +31,16 @@ class Form extends React.Component {
     let values = this.props.values;
 
     this.state = {
-      values: {...values}
+      values: {...values},
+      open: false
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+  // You don't have to do this check first, but it can help prevent an unneeded render
+    if (nextProps.values !== this.state.values) {
+      this.setState({ values: {...nextProps.values} });
+    }
   }
 
   handleChange(event) {
@@ -49,7 +62,7 @@ class Form extends React.Component {
           id={field.name}
           name={field.name}
           label={field.label}
-          value={this.state.values[field.name]}
+          value={this.state.values[field.name] || ""}
           onChange={this.handleChange.bind(this)}
           type={field.type}
           {...field.options}
@@ -84,7 +97,7 @@ class Form extends React.Component {
           control={
             <Checkbox
               name={field.name}
-              checked={this.state.values[field.name]}
+              checked={this.state.values[field.name] ? true : false}
               onChange={this.handleCheck.bind(this)}
             />
           }
@@ -120,13 +133,55 @@ class Form extends React.Component {
 
   button(field) {
     return (
-      <Button onClick={field.onClick.bind(this)} >{field.label}</Button>
+      <Button onClick={this.onClick.bind(this, field)} >{field.label}</Button>
     );
+  }
+
+  onClick(field) {
+    if (field.confirmation) {
+      this.setState({confirmation: true, afterConfirmation: ()=>{field.onClick();}});
+    } else {
+      field.onClick();
+    }
   }
 
   submitButton(field) {
     return (
       <Button type="submit" onClick={this.submit.bind(this)} >{field.label}</Button>
+    );
+  }
+
+  handleClose(dialog) {
+    this.setState({[dialog]: false});
+  }
+
+  confirm(func) {
+    this.state.afterConfirmation;
+  }
+
+  confirmationDialog(field) {
+    return (
+      <Dialog
+        open={this.state.open}
+        onClose={this.handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{field.confirmationTitle}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {field.confirmationText}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClose.bind(this, "confirmation")} color="primary">
+            Annluer
+          </Button>
+          <Button onClick={this.confirm.bind(this, "afterConfirmation")} color="primary">
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
     );
   }
 
@@ -170,6 +225,7 @@ class Form extends React.Component {
           return (
             <Grid key={field.name + field.label} item {...field.width}>
               {this.field(field, classes)}
+              {this.confirmationDialog(field)}
             </Grid>
           );
         })}
