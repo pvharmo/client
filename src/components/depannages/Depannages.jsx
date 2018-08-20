@@ -118,6 +118,12 @@ class Depannages extends React.Component {
   constructor() {
     super();
 
+    socket.emit("get-depannages");
+
+    socket.on("set-depannages", (depannages)=>{
+      this.setState({depannages});
+    });
+
     this.state = {
       depannageSelectionne: {}
     };
@@ -132,6 +138,10 @@ class Depannages extends React.Component {
   }
 
   closeSnackbar() {
+
+  }
+
+  selectionnerDepannage() {
 
   }
 
@@ -158,9 +168,28 @@ class Depannages extends React.Component {
   render() {
 
     const colonnes = [
-      {nom: ""}
+      {nom: "prenom", label: {name: "Prénom", options: {filter: false}}},
+      {nom: "nom", label: {name: "Nom", options: {filter: false}}},
+      {nom: "service_utilise", label: {name: "Service", options: {customBodyRender: (value)=>{
+        switch (value) {
+        case "accueil":
+          return "Accueil";
+        case "adas":
+          return "ADAS";
+        case "courriel":
+          return "Courriel";
+        case "telephone":
+          return "Téléphone";
+        default:
+
+        }
+        return (value);
+      }}}},
+      {nom: "id", label: {name: "Éditer", options: {filter: false, customBodyRender: (value, tableMeta)=>{
+        return (<IconButton index={tableMeta.columnIndex} onClick={this.selectionnerDepannage.bind(this,value)}><Edit/></IconButton>);
+      }}}}
     ];
-    const datatable = this.datatable(colonnes);
+    const datatable = this.datatable(colonnes, this.state.depannages);
     const options = {
       rowsPerPage: 25,
       rowsPerPageOptions: [10, 25, 50, 100],
