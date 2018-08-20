@@ -3,6 +3,7 @@ import { Router, Route, Switch, NavLink } from "react-router-dom";
 import { createBrowserHistory } from "history";
 
 import Membres from "./components/membres/Membres.jsx";
+import Depannages from "./components/depannages/Depannages.jsx";
 
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -51,10 +52,14 @@ const styles = {
 };
 
 class App extends React.Component {
-  state = {
-    auth: true,
-    anchorEl: null,
-  };
+  constructor() {
+    super();
+
+    this.state = {
+      auth: true,
+      anchorEl: null,
+    };
+  }
 
   handleChange = (event, checked) => {
     this.setState({ auth: checked });
@@ -148,7 +153,7 @@ class App extends React.Component {
             <Switch>
               <Route path="/employes" />
               <Route path="/membres" component={Membres} />
-              <Route path="/depannages" />
+              <Route path="/depannages" component={Depannages} />
             </Switch>
           </div>
         </div>

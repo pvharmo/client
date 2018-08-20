@@ -11,9 +11,11 @@ import CardHeader from "@material-ui/core/CardHeader";
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
-import Edit from '@material-ui/icons/Edit';
 import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import Edit from '@material-ui/icons/Edit';
+import Add from '@material-ui/icons/Add';
+import Clear from '@material-ui/icons/Clear';
 
 const provinces = [
   {label: "Québec", value: "QC"},
@@ -45,17 +47,23 @@ class Membres extends React.Component {
   constructor() {
     super();
 
-    socket.emit("get-liste-membres");
-    socket.on("set-liste-membres", (listeMembres)=> {
-      this.setState({listeMembres});
-    });
-
     this.membreVide = {
       id: undefined, nom: "", prenom: "", adresse: "", province: "",
       ville: "", code_postal: "", date_naissance: "0000-00-00",
       sexe: "", telephone: "", telephone_alt: "", courriel: "", info_courriel: false,
       info_poste: false, actif: true, militant: false, regulier: false, commentaires: ""
     };
+
+    socket.emit("get-liste-membres");
+    socket.on("set-liste-membres", (listeMembres)=> {
+      this.setState({listeMembres});
+    });
+    socket.on("set-liste-renouvellements", (listeRenouvellements)=> {
+      this.setState({listeRenouvellements});
+    });
+    socket.on("error-saving", (couleur, msg)=>{
+      this.setState({confEnr: true, confEnrCouleur: couleur, confEnrMsg: msg, membreSelectionne: {...this.membreVide}});
+    });
 
     this.state = {
       renouvellementSelectionne: {},
@@ -66,7 +74,7 @@ class Membres extends React.Component {
 
   submit(values) {
     if (this.state.membreSelectionne.id) {
-      socket.emit("modifier-membre");
+      socket.emit("modifier-membre", values);
     } else {
       this.setState({renouvellement: true, infosMembre: values});
     }
@@ -78,35 +86,24 @@ class Membres extends React.Component {
 
   enregistrerRenouvellement(values) {
     if (this.state.membreSelectionne.id) {
-      socket.emit("renouvellement", this.state.membreSelectionne.id, values);
+      socket.emit("renouvellement", this.state.membreSelectionne.id, values, this.state.membreSelectionne.regulier);
     } else {
       socket.emit("nouveau-membre", this.state.infosMembre, values);
     }
     this.setState({renouvellement: false});
   }
 
-  dataTable() {
+  dataTable(donnees, colonnes) {
     let datatable = {colonnes: [], donnees: []};
-    if (this.state.listeMembres) {
-      const colonnes = [
-        {nom: "prenom", label: {name: "Prénom", options: {filter: false}}},
-        {nom: "nom", label: {name: "Nom", options: {filter: false}}},
-        {nom: "info_poste", label: "Poste"},
-        {nom: "info_courriel", label: "Courriel"},
-        {nom: "actif", label: "Actif"},
-        {nom: "militant", label: "Militant"},
-        {nom: "regulier", label: "Type"},
-        {nom: "id", label: {name: "Éditer", options: {filter: false, customBodyRender: (value, tableMeta)=>{
-          return (<IconButton index={tableMeta.columnIndex} onClick={this.selectionnerMembre.bind(this,value)}><Edit/></IconButton>);
-        }}}}
-      ];
+    if (donnees) {
+
       for (let i = 0; i < colonnes.length; i++) {
         datatable.colonnes.push(colonnes[i].label);
       }
-      for (let i = 0; i < this.state.listeMembres.length; i++) {
+      for (let i = 0; i < donnees.length; i++) {
         let row = [];
         for (let j = 0; j < colonnes.length; j++) {
-          row.push(this.state.listeMembres[i][colonnes[j].nom]);
+          row.push(donnees[i][colonnes[j].nom]);
         }
         datatable.donnees.push(row);
       }
@@ -143,7 +140,19 @@ class Membres extends React.Component {
         --index;
       }
     }
+    socket.emit("get-liste-renouvellement", this.state.listeMembres[index].id);
     this.setState({membreSelectionne: this.state.listeMembres[index]});
+  }
+
+  supprimerRenouvellement(id) {
+    let confirm = window.confirm("Êtes-vous sûr de vouloir supprimer ce renouvellement? Cette action est irréversible.");
+    if (confirm) {
+      socket.emit('supprimer-renouvellement', id, this.state.membreSelectionne.id);
+    }
+  }
+
+  closeSnackbar() {
+    this.setState({confEnr: false});
   }
 
   render() {
@@ -157,8 +166,8 @@ class Membres extends React.Component {
         {label: "Autre", value: "A"}
       ]},
       {name: "date_naissance", label: "Date de naissance", type: "date", width: {xs: 2}},
-      {name: "adresse", label: "Adresse", type: "text", width:{xs: 4}},
-      {name: "appartement", label: "Appartement", type: "number", width:{xs: 1}},
+      {name: "adresse", label: "Adresse", type: "text", width: {xs: 4}},
+      {name: "appartement", label: "App.", type: "text", width: {xs: 1}},
       {name: "code_postal", label: "Code postal", type: "text", width: {xs:2}},
       {name: "ville", label: "Ville", type: "text", width: {xs:3}},
       {name: "province", label: "Province", type: "select", width: {xs:2}, items: provinces},
@@ -175,7 +184,10 @@ class Membres extends React.Component {
       ]},
       {name: "commentaires", label: "Commentaires", type: "text", options: {multiline: true, rows: 4}},
       {type: "submit", label: "Enregistrer", width: {xs: 2}},
-      {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerMembre();}, confirmation: true}
+      {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerMembre();},
+        confirmation: true, confirmationText: "Cette action est irréversible",
+        confirmationTitle: "Êtes-vous sûr de vouloir supprimer ce membre?"
+      }
     ];
     const values = this.state.membreSelectionne;
 
@@ -205,11 +217,45 @@ class Membres extends React.Component {
       download: false
     };
 
-    const datatable = this.dataTable();
+    const colonnesMembres = [
+      {nom: "prenom", label: {name: "Prénom", options: {filter: false}}},
+      {nom: "nom", label: {name: "Nom", options: {filter: false}}},
+      {nom: "info_poste", label: "Poste"},
+      {nom: "info_courriel", label: "Courriel"},
+      {nom: "actif", label: "Actif"},
+      {nom: "militant", label: "Militant"},
+      {nom: "regulier", label: "Type"},
+      {nom: "id", label: {name: "Éditer", options: {filter: false, customBodyRender: (value, tableMeta)=>{
+        return (<IconButton index={tableMeta.columnIndex} onClick={this.selectionnerMembre.bind(this,value)}><Edit/></IconButton>);
+      }}}}
+    ];
+
+    const colonnesRenouvellements = [
+      {nom: "date_renouvellement", label: "Date"},
+      {nom: "regulier", label: "Régulier"},
+      // {nom: "dons", label: "Dons"},
+      {nom: "commentaires", label: "Commentaires"},
+      {nom: "id", label: {name: "Supprimer", options: {customBodyRender: (value, tableMeta)=>{
+        return (<IconButton index={tableMeta.columnIndex} onClick={this.supprimerRenouvellement.bind(this,value)}><Clear color="secondary"/></IconButton>);
+      }}}}
+    ];
+
+    const datatable = this.dataTable(this.state.listeMembres, colonnesMembres);
+    const renouvellements = this.dataTable(this.state.listeRenouvellements, colonnesRenouvellements);
+    const optionsListeRenouvellement = {
+      filter: false,
+      sort: false,
+      selectableRows: false,
+      print: false,
+      download: false,
+      rowHover: false,
+      rowsPerPage: 6,
+      rowsPerPageOptions: [6, 12, 24]
+    };
 
     return (
       <Grid container spacing={16} >
-        <Grid item xs={10}>
+        <Grid item xs={7}>
           <Card>
             <CardHeader title="Informations du membre" />
             <CardContent>
@@ -221,18 +267,39 @@ class Membres extends React.Component {
                     fields={champsRenouvellement}
                     values={valeursRenouvellement}
                     onSubmit={this.enregistrerRenouvellement.bind(this)} />
+
                 </DialogContent>
               </Dialog>
+              <Snackbar
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                open={this.state.confEnr}
+                variant={this.state.confEnrCouleur}
+                autoHideDuration={3000}
+                onClose={this.closeSnackbar.bind(this)}
+                ContentProps={{
+                  'aria-describedby': 'message-id',
+                }}
+                message={<span id="message-id">{this.state.confEnrMsg}</span>}
+              />
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={2}>
-          <Card >
-            <CardHeader title="Renouvellements du membre" />
-            <CardContent>
-              <Button onClick={this.toggleDialog.bind(this)}>Renouvellement</Button>
-            </CardContent>
-          </Card>
+        <Grid item xs={5}>
+          {this.state.listeRenouvellements &&
+            <DataTable
+              title={<div style={{display: "flex", alignItems: "center"}}>
+                Liste des renouvellements
+                <IconButton onClick={this.toggleDialog.bind(this)}><Add color="primary" aria-label="Renouvellement" /></IconButton>
+              </div>}
+              data={renouvellements.donnees}
+              columns={renouvellements.colonnes}
+              options={optionsListeRenouvellement}
+            />
+          }
+
         </Grid>
         <Grid item xs={12}>
           {this.state.listeMembres &&
