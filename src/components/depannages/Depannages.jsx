@@ -7,15 +7,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
-import CardHeader from "@material-ui/core/CardHeader";
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import IconButton from '@material-ui/core/IconButton';
 import Snackbar from '@material-ui/core/Snackbar';
 import Edit from '@material-ui/icons/Edit';
-import Add from '@material-ui/icons/Add';
-import Clear from '@material-ui/icons/Clear';
 
 const provinces = [
   {label: "Québec", value: "QC"},
@@ -34,81 +28,8 @@ const provinces = [
   {label: "Extérieur du Canada", value: "EX"}
 ];
 
-const champsDepannage = [
-  {name: "prenom", label: "Prénom", type: "text", width:{xs: 4}},
-  {name: "nom", label: "Nom", type: "text", width:{xs: 4}},
-  {name: "sexe", label: "Sexe", type: "select", width:{xs: 2}, items: [
-    {label: "Homme", value: "H"},
-    {label: "Femme", value: "F"},
-    {label: "Autre", value: "A"}
-  ]},
-  {name: "date_naissance", label: "Date de naissance", type: "date", width: {xs: 2}},
-  {name: "adresse", label: "Adresse", type: "text", width: {xs: 4}},
-  {name: "appartement", label: "App.", type: "number", width: {xs: 1}},
-  {name: "code_postal", label: "Code postal", type: "text", width: {xs:2}},
-  {name: "ville", label: "Ville", type: "text", width: {xs:3}},
-  {name: "province", label: "Province", type: "select", width: {xs:2}, items: provinces},
-  {name: "telephone", label: "Téléphone", type: "text", width: {xs: 4}},
-  {name: "telephone_alt", label: "Téléphone alternatif", type: "text", width: {xs: 4}},
-  {name: "courriel", label: "Courriel", type: "text", width: {xs: 4}},
-  // ------------------------------------------------------------------------ //
-  {type: "expansion-panel", title: "Utilisation", fields:[
-    // {label: "Utilisation", type: "title", variant: "title"},
-    {name: "service_utilise", label: "Service utilisé", width: {xs:4}, type: "select", items: [
-      {label: "Accueil", value: "accueil"},
-      {label: "ADAS", value: "adas"},
-      {label: "Courriel", value: "courriel"},
-      {label: "Téléphone", value: "telephone"}
-    ]},
-    {name: "date_depannage", label: "Date", type: "datetime", width: {xs:4}},
-    {name: "pour_autre_personne", label: "Pour autre personne", type: "checkbox", width: {xs:4}},
-    {name: "nombre_appel", label: "Nombre d'appels", type: "number", width: {xs:4}},
-    {name: "remarque_appel", label: "Remarque", type: "select", width: {xs:4}, items: [
-      {label: "Répondeur", value: "repondeur"},
-      {label: "Pas rejoint", value: "pas_rejoint"}
-    ]},
-    // {name: "repondeur", label: "Répondeur", type: "checkbox", width: {xs:4}},
-    // {name: "pas_rejoint", label: "Pas rejoint", type: "checkbox", width: {xs:4}},
-  ]},
-  // ------------------------------------------------------------------------ //
-  {type: "expansion-panel", title: "Raison", fields: [
-    {type: "select", name: "raison", label: "Raison", width: {xs:3}, items:[
-      {label: "Information", value: "I"},
-      {label: "Problème", value: "P"}
-    ]},
-    {type: "select", name: "motif", label: "Motif", width: {xs:9}, items: [
-      {label: "À faire", value: "test"}
-    ]},
-    {type: "select", name: "statut_aide_sociale", label: "Statut aide sociale", width: {xs:12}, items: [
-      {label: "À faire", value: ""}
-    ]},
-    {type: "select", name: "situation_menage", label: "Situation du ménage", width: {xs:6}, items: [
-      {label: "À faire", value: ""}
-    ]},
-    {type: "number", name: "nb_adultes", label: "Nombre d'adultes", width: {xs:3}},
-    {type: "number", name: "nb_enfants", label: "Nombre d'enfant", width: {xs:3}},
-  ]},
-  // ------------------------------------------------------------------------ //
-  {type: "expansion-panel", title: "Traitement", fields:[
-    // {label: "Traitement", type: "title", variant: "title"},
-    {type: "select", name: "connaissance_adds", label: "Connaissance de l'ADDS", width: {xs:4}, items: [
-      {label: "À faire", value: ""}
-    ]},
-    {type: "select", name: "traite_par", label: "Traité par", width: {xs:4}, items: [
-      {label: "À faire", value: "test"}
-    ]},
-    {type: "checkbox", name: "traite", label: "Traité", width: {xs:4}},
-  ]},
-  {type: "text", name: "remarques", label: "Remarques", options: {multiline: true, rows: 4}},
-  // ------------------------------------------------------------------------ //
-  {type: "submit", label: "Enregistrer", width: {xs: 2}},
-  {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerMembre();},
-    confirmation: true, confirmationText: "Cette action est irréversible",
-    confirmationTitle: "Êtes-vous sûr de vouloir supprimer ce membre?"
-  }
-];
 
-const valeursDepannage = {date_depannage:new Date()};
+
 
 const styles = {
 
@@ -118,14 +39,59 @@ class Depannages extends React.Component {
   constructor() {
     super();
 
+    socket.on("error-saving", (couleur, msg)=>{
+      this.setState({confEnr: true, confEnrCouleur: couleur, confEnrMsg: msg});
+    });
+
     socket.emit("get-depannages");
+    socket.emit("get-menus", ["motif", "statut", "connaissanceADDS", "traite_par", "remarque_appel"]);
 
     socket.on("set-depannages", (depannages)=>{
       this.setState({depannages});
     });
 
+    socket.on("set-menus", (values)=>{
+      let motif = [];
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].nom_menu == "motif") {
+          motif.push(values[i]);
+          delete values[i];
+        }
+      }
+      let statut = [];
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].nom_menu == "statut") {
+          statut.push(values[i]);
+        }
+      }
+      let connaissanceADDS = [];
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].nom_menu == "connaissanceADDS") {
+          connaissanceADDS.push(values[i]);
+        }
+      }
+      let traitePar = [];
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].nom_menu == "traite_par") {
+          traitePar.push(values[i]);
+        }
+      }
+      let remarqueAppel = [];
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].nom_menu == "remarque_appel") {
+          remarqueAppel.push(values[i]);
+        }
+      }
+      this.setState({statut, motif, connaissanceADDS, traitePar, remarqueAppel});
+    });
+
     this.state = {
-      depannageSelectionne: {}
+      depannageSelectionne: {},
+      statut: [],
+      motif: [],
+      traitePar: [],
+      connaissanceADDS: [],
+      remarqueAppel: []
     };
   }
 
@@ -138,11 +104,36 @@ class Depannages extends React.Component {
   }
 
   closeSnackbar() {
-
+    this.setState({confEnr: false});
   }
 
-  selectionnerDepannage() {
+  clearForm() {
+    this.setState({depannageSelectionne: {}});
+  }
 
+  selectionnerDepannage(id) {
+    let found = false;
+    let complete = false;
+    let index = 0;
+    let top = false;
+    while (!found && !complete) {
+      if (this.state.depannages[index]) {
+        if (this.state.depannages[index].id === id) {
+          found = true;
+        } else if (!top && this.state.depannages[index].id <= id) {
+          index += 30;
+        } else if (this.state.depannages[index].id >= id) {
+          top = true;
+          --index;
+        } else {
+          complete = true;
+          index = -1;
+        }
+      } else {
+        --index;
+      }
+    }
+    this.setState({depannageSelectionne: this.state.depannages[index]});
   }
 
   datatable (colonnes, donnees) {
@@ -166,6 +157,69 @@ class Depannages extends React.Component {
   }
 
   render() {
+
+    const champsDepannage = [
+      {name: "prenom", label: "Prénom", type: "text", width:{xs: 4}},
+      {name: "nom", label: "Nom", type: "text", width:{xs: 4}},
+      {name: "sexe", label: "Sexe", type: "select", width:{xs: 2}, items: [
+        {label: "Homme", value: "H"},
+        {label: "Femme", value: "F"},
+        {label: "Autre", value: "A"}
+      ]},
+      {name: "date_naissance", label: "Date de naissance", type: "date", width: {xs: 2}},
+      {name: "adresse", label: "Adresse", type: "text", width: {xs: 4}},
+      {name: "appartement", label: "App.", type: "number", width: {xs: 1}},
+      {name: "code_postal", label: "Code postal", type: "text", width: {xs:2}},
+      {name: "ville", label: "Ville", type: "text", width: {xs:3}},
+      {name: "province", label: "Province", type: "select", width: {xs:2}, items: provinces},
+      {name: "telephone", label: "Téléphone", type: "text", width: {xs: 4}},
+      {name: "telephone_alt", label: "Téléphone alternatif", type: "text", width: {xs: 4}},
+      {name: "courriel", label: "Courriel", type: "text", width: {xs: 4}},
+      // ------------------------------------------------------------------------ //
+      {type: "expansion-panel", title: "Utilisation", fields:[
+        // {label: "Utilisation", type: "title", variant: "title"},
+        {name: "service_utilise", label: "Service utilisé", width: {xs:4}, type: "select", items: [
+          {label: "Accueil", value: "accueil"},
+          {label: "ADAS", value: "adas"},
+          {label: "Courriel", value: "courriel"},
+          {label: "Téléphone", value: "telephone"}
+        ]},
+        {name: "date_depannage", label: "Date", type: "datetime", width: {xs:4}},
+        {name: "pour_autre_personne", label: "Pour autre personne", type: "checkbox", width: {xs:4}},
+        {name: "nombre_appel", label: "Nombre d'appels", type: "number", width: {xs:4}},
+        {name: "remarque_appel", label: "Remarque", type: "select", width: {xs:4}, items: this.state.remarqueAppel},
+      ]},
+      // ------------------------------------------------------------------------ //
+      {type: "expansion-panel", title: "Raison", fields: [
+        {type: "select", name: "raison", label: "Raison", width: {xs:3}, items:[
+          {label: "Information", value: "I"},
+          {label: "Problème", value: "P"}
+        ]},
+        {type: "select", name: "motif", label: "Motif", width: {xs:9}, items: this.state.motif},
+        {type: "select", name: "statut_aide_sociale", label: "Statut aide sociale", width: {xs:12}, items: this.state.statut},
+        {type: "select", name: "situation_menage", label: "Situation du ménage", width: {xs:6}, items: [
+          {label: "À faire", value: ""}
+        ]},
+        {type: "number", name: "nb_adultes", label: "Nombre d'adultes", width: {xs:3}},
+        {type: "number", name: "nb_enfants", label: "Nombre d'enfant", width: {xs:3}},
+      ]},
+      // ------------------------------------------------------------------------ //
+      {type: "expansion-panel", title: "Traitement", fields:[
+        {type: "select", name: "connaissance_adds", label: "Connaissance de l'ADDS", width: {xs:4}, items: this.state.connaissanceADDS},
+        {type: "select", name: "traite_par", label: "Traité par", width: {xs:4}, items: this.state.traitePar},
+        {type: "checkbox", name: "traite", label: "Traité", width: {xs:4}},
+      ]},
+      {type: "text", name: "remarques", label: "Remarques", options: {multiline: true, rows: 4}},
+      // ------------------------------------------------------------------------ //
+      {type: "submit", label: "Enregistrer", width: {xs: 2}},
+      {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerMembre();},
+        confirmation: true, confirmationText: "Cette action est irréversible",
+        confirmationTitle: "Êtes-vous sûr de vouloir supprimer ce membre?"
+      },
+      {type: "button", label: "Nouveau dépannage", width: {xs:2}, onClick: ()=>{this.clearForm();}}
+    ];
+
+    const valeursDepannage = this.state.depannageSelectionne;
 
     const colonnes = [
       {nom: "prenom", label: {name: "Prénom", options: {filter: false}}},
@@ -204,7 +258,7 @@ class Depannages extends React.Component {
           <Card>
             <CardContent>
               <Form fields={champsDepannage} values={valeursDepannage} onSubmit={this.submit.bind(this)} />
-              {/*<Snackbar
+              <Snackbar
                 anchorOrigin={{
                   vertical: 'bottom',
                   horizontal: 'center',
@@ -217,7 +271,7 @@ class Depannages extends React.Component {
                   'aria-describedby': 'message-id',
                 }}
                 message={<span id="message-id">{this.state.confEnrMsg}</span>}
-              />*/}
+              />
             </CardContent>
           </Card>
         </Grid>

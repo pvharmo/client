@@ -4,6 +4,7 @@ import { createBrowserHistory } from "history";
 
 import Membres from "./components/membres/Membres.jsx";
 import Depannages from "./components/depannages/Depannages.jsx";
+import Admin from "./components/admin/Admin.jsx";
 
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -19,9 +20,9 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import DraftsIcon from '@material-ui/icons/Drafts';
-import SendIcon from '@material-ui/icons/Send';
+import Gavel from '@material-ui/icons/Gavel';
+import People from '@material-ui/icons/People';
+import SettingsSharp from '@material-ui/icons/SettingsSharp';
 
 const hist = createBrowserHistory();
 const drawerWidth = 230;
@@ -122,19 +123,11 @@ class App extends React.Component {
           <Drawer variant="permanent" classes={{paper: classes.drawerStyle}}>
             <List
               component="nav"
-              subheader={<ListSubheader component="div">Nested List Items</ListSubheader>}>
-              <NavLink to="/employes">
-                <ListItem button>
-                  <ListItemIcon>
-                    <SendIcon />
-                  </ListItemIcon>
-                  <ListItemText inset primary="Employés" />
-                </ListItem>
-              </NavLink>
+              subheader={<ListSubheader component="div">Menu</ListSubheader>}>
               <NavLink to="/membres">
                 <ListItem button>
                   <ListItemIcon>
-                    <DraftsIcon />
+                    <People />
                   </ListItemIcon>
                   <ListItemText inset primary="Membres" />
                 </ListItem>
@@ -142,18 +135,26 @@ class App extends React.Component {
               <NavLink to="/depannages">
                 <ListItem button>
                   <ListItemIcon>
-                    <InboxIcon />
+                    <Gavel />
                   </ListItemIcon>
                   <ListItemText inset primary="Dépannages" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/administration">
+                <ListItem button>
+                  <ListItemIcon>
+                    <SettingsSharp />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Administration" />
                 </ListItem>
               </NavLink>
             </List>
           </Drawer>
           <div className={classes.mainContainer} >
             <Switch>
-              <Route path="/employes" />
               <Route path="/membres" component={Membres} />
               <Route path="/depannages" component={Depannages} />
+              <Route path="/administration" component={Admin} />
             </Switch>
           </div>
         </div>

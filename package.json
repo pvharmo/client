@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^1.4.3",
     "@material-ui/icons": "^2.0.1",
+    "formik": "^1.0.3",
     "material-ui-pickers": "^1.0.0-rc.12",
     "moment": "^2.22.2",
     "mui-datatables": "^2.0.0-beta-21",

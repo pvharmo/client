@@ -9,7 +9,6 @@ import DateTimePicker from 'material-ui-pickers/DateTimePicker';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
-import Icon from "@material-ui/core/Icon";
 import TextField from "@material-ui/core/TextField";
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -52,8 +51,6 @@ const styles = {
     }
   }
 };
-
-
 
 class Form extends React.Component {
   constructor(props) {
@@ -221,8 +218,8 @@ class Form extends React.Component {
   }
 
   confirm() {
+    this.handleClose("confirmation");
     this.state.afterConfirmation();
-    this.handleClose();
   }
 
   confirmationDialog(field) {
