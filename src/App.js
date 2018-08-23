@@ -1,6 +1,7 @@
 import React from 'react';
 import { Router, Route, Switch, NavLink } from "react-router-dom";
 import { createBrowserHistory } from "history";
+import { socket } from './socket';
 
 import Membres from "./components/membres/Membres.jsx";
 import Depannages from "./components/depannages/Depannages.jsx";
@@ -23,6 +24,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Gavel from '@material-ui/icons/Gavel';
 import People from '@material-ui/icons/People';
 import SettingsSharp from '@material-ui/icons/SettingsSharp';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Dialog from '@material-ui/core/Dialog';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 const hist = createBrowserHistory();
 const drawerWidth = 230;
@@ -52,6 +59,13 @@ const styles = {
   }
 };
 
+// socket.on('connect', function(){
+//   socket.emit('authentication', {password: "addsqm-301"});
+//   socket.on('authenticated', function() {
+//     // use the socket as usual
+//   });
+// });
+
 class App extends React.Component {
   constructor() {
     super();
@@ -59,6 +73,8 @@ class App extends React.Component {
     this.state = {
       auth: true,
       anchorEl: null,
+      login: true,
+      password: ""
     };
   }
 
@@ -74,6 +90,15 @@ class App extends React.Component {
     this.setState({ anchorEl: null });
   };
 
+  handlePassword = (event) => {
+    this.setState({password: event.target.value});
+  };
+
+  login() {
+    this.setState({login: false});
+    socket.emit('authentication', {password: this.state.password});
+  }
+
   render() {
     const { classes } = this.props;
     const { auth, anchorEl } = this.state;
@@ -82,6 +107,23 @@ class App extends React.Component {
     return (
       <Router history={hist}>
         <div className={classes.root}>
+          <Dialog
+            open={this.state.login}
+            disableBackdropClick
+            disableEscapeKeyDown
+            maxWidth="xs"
+            aria-labelledby="confirmation-dialog-title"
+            >
+            <DialogTitle id="confirmation-dialog-title">Connexion</DialogTitle>
+            <DialogContent>
+              <TextField type="password" onChange={this.handlePassword.bind(this)} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.login.bind(this)} color="primary">
+                Connexion
+              </Button>
+            </DialogActions>
+          </Dialog>
           <AppBar position="static"
             className={classes.appbar}>
             <Toolbar>

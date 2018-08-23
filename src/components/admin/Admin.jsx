@@ -26,13 +26,17 @@ class Admin extends React.Component {
 
     socket.emit("get-menus");
 
-    socket.on("set-menus", (menus)=>{
+    socket.on("set-menus-liste", (menus)=>{
       this.setState({menus});
     });
 
     this.state = {
       menuSelectionne: {}
     };
+  }
+
+  componentWillUnmount() {
+    socket.removeListener("set-menus-liste");
   }
 
   submit(infos) {
@@ -79,12 +83,10 @@ class Admin extends React.Component {
   datatable (colonnes, donnees) {
     let datatable = {colonnes: [], donnees: []};
     if (donnees) {
-      console.log(donnees);
       for (let i = 0; i < colonnes.length; i++) {
         datatable.colonnes.push(colonnes[i].label);
       }
       for (let i = 0; i < donnees.length; i++) {
-        console.log(i);
         let row = [];
         for (let j = 0; j < colonnes.length; j++) {
           row.push(donnees[i][colonnes[j].nom]);

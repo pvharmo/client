@@ -29,8 +29,6 @@ const provinces = [
 ];
 
 
-
-
 const styles = {
 
 };
@@ -95,6 +93,11 @@ class Depannages extends React.Component {
     };
   }
 
+  componentWillUnmount() {
+    socket.removeListener("set-menus");
+    socket.removeListener("set-depannages");
+  }
+
   submit(infos) {
     if (this.state.depannageSelectionne.id) {
       socket.emit("enregistrer-depannage", infos);
@@ -156,6 +159,11 @@ class Depannages extends React.Component {
     return datatable;
   }
 
+  supprimerDepannage() {
+    socket.emit("supprimer-depannage", this.state.depannageSelectionne.id);
+    this.clearForm();
+  }
+
   render() {
 
     const champsDepannage = [
@@ -212,7 +220,7 @@ class Depannages extends React.Component {
       {type: "text", name: "remarques", label: "Remarques", options: {multiline: true, rows: 4}},
       // ------------------------------------------------------------------------ //
       {type: "submit", label: "Enregistrer", width: {xs: 2}},
-      {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerMembre();},
+      {type: "button", label: "Supprimer", width: {xs:2}, onClick: ()=>{this.supprimerDepannage();},
         confirmation: true, confirmationText: "Cette action est irréversible",
         confirmationTitle: "Êtes-vous sûr de vouloir supprimer ce membre?"
       },
