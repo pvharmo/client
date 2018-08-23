@@ -51,32 +51,32 @@ class Depannages extends React.Component {
     socket.on("set-menus", (values)=>{
       let motif = [];
       for (let i = 0; i < values.length; i++) {
-        if (values[i].nom_menu == "motif") {
+        if (values[i].nom_menu === "motif") {
           motif.push(values[i]);
           delete values[i];
         }
       }
       let statut = [];
       for (let i = 0; i < values.length; i++) {
-        if (values[i].nom_menu == "statut") {
+        if (values[i].nom_menu === "statut") {
           statut.push(values[i]);
         }
       }
       let connaissanceADDS = [];
       for (let i = 0; i < values.length; i++) {
-        if (values[i].nom_menu == "connaissanceADDS") {
+        if (values[i].nom_menu === "connaissanceADDS") {
           connaissanceADDS.push(values[i]);
         }
       }
       let traitePar = [];
       for (let i = 0; i < values.length; i++) {
-        if (values[i].nom_menu == "traite_par") {
+        if (values[i].nom_menu === "traite_par") {
           traitePar.push(values[i]);
         }
       }
       let remarqueAppel = [];
       for (let i = 0; i < values.length; i++) {
-        if (values[i].nom_menu == "remarque_appel") {
+        if (values[i].nom_menu === "remarque_appel") {
           remarqueAppel.push(values[i]);
         }
       }

@@ -59,13 +59,6 @@ const styles = {
   }
 };
 
-// socket.on('connect', function(){
-//   socket.emit('authentication', {password: "addsqm-301"});
-//   socket.on('authenticated', function() {
-//     // use the socket as usual
-//   });
-// });
-
 class App extends React.Component {
   constructor() {
     super();
