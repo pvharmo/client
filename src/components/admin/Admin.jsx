@@ -113,7 +113,8 @@ class Admin extends React.Component {
         {label: "Statut aide sociale", value: "statut"},
         {label: "Connaissance de l'ADDS", value: "connaissanceADDS"},
         {label: "Traité par", value: "traite_par"},
-        {label: "Remarque de l'appel", value: "remarque_appel"}
+        {label: "Remarque de l'appel", value: "remarque_appel"},
+        {label: "Arrondissement", value: "arrondissement"}
       ]},
       {name: "archive", label: "Archiver", type: "checkbox", width: {xs:2}},
       {type: "submit", label: "Enregistrer", width: {xs: 2}},

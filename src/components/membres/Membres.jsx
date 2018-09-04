@@ -2,20 +2,27 @@ import React from "react";
 import Form from "../form/Form.jsx";
 import DataTable from "mui-datatables";
 import { socket } from '../../socket';
+import { FilePicker } from 'react-file-picker';
+import csv from "fast-csv";
+import pdf from "jspdf";
 
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
+import CardActions from '@material-ui/core/CardActions';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import IconButton from '@material-ui/core/IconButton';
+import Button from "@material-ui/core/Button";
 import Snackbar from '@material-ui/core/Snackbar';
 import Edit from '@material-ui/icons/Edit';
 import Add from '@material-ui/icons/Add';
 import Clear from '@material-ui/icons/Clear';
+import Done from '@material-ui/icons/Done';
+import Close from '@material-ui/icons/Close';
 
 const provinces = [
   {label: "Québec", value: "QC"},
@@ -69,7 +76,10 @@ class Membres extends React.Component {
     this.state = {
       renouvellementSelectionne: {},
       membreSelectionne: {...this.membreVide},
-      renouvellement: false
+      renouvellement: false,
+      file: {
+        name: ""
+      }
     };
   }
 
@@ -156,6 +166,58 @@ class Membres extends React.Component {
     this.setState({confEnr: false});
   }
 
+  openFile(error, file) {
+    if (error) {
+      console.error(file);
+    } else {
+      // console.log(file);
+      var _this = this;
+      let reader = new FileReader();
+      let dataArray = [];
+      reader.onload = function() {
+        csv.fromString(reader.result, {headers: true}).on("data", function(data){
+          dataArray.push(data);
+        }).on("end", function(){
+          _this.setState({etiquettes: dataArray, telechargerEtiquettes: true});
+        });
+        // console.log(reader.result);
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  telechargerEtiquettes() {
+    let etiquettes = new pdf({unit: "mm", format: "letter"});
+    let y = 21;
+    let h = 25.5;
+    etiquettes.setFontSize(10);
+    for (let i = 1; i < this.state.etiquettes.length; i++) {
+      if (i%30 == 1 && i != 1) {
+        etiquettes.addPage();
+        y = 21;
+      }
+      let text = this.state.etiquettes[i].prenom + " " + this.state.etiquettes[i].nom + "\n" +
+        this.state.etiquettes[i].adresse + "\n" +
+        this.state.etiquettes[i].ville + ", " + this.state.etiquettes[i].province + "\n" +
+        this.state.etiquettes[i].code_postal;
+      let splitTest = etiquettes.splitTextToSize(text, 60);
+      switch (i%3) {
+      case 1:
+        etiquettes.text(splitTest, 9,y);
+        break;
+      case 2:
+        etiquettes.text(splitTest, 78,y);
+        break;
+      case 0:
+      default:
+        etiquettes.text(splitTest, 147,y);
+        y += h;
+        break;
+      }
+    }
+    etiquettes.save("etiquettes.pdf");
+  }
+
   render() {
 
     const champsMembre = [
@@ -221,11 +283,41 @@ class Membres extends React.Component {
     const colonnesMembres = [
       {nom: "prenom", label: {name: "Prénom", options: {filter: false}}},
       {nom: "nom", label: {name: "Nom", options: {filter: false}}},
-      {nom: "info_poste", label: "Poste"},
-      {nom: "info_courriel", label: "Courriel"},
-      {nom: "actif", label: "Actif"},
-      {nom: "militant", label: "Militant"},
-      {nom: "regulier", label: "Type"},
+      {nom: "info_poste", label: {name: "Poste", options: {customBodyRender: (value)=>{
+        if (value == 1) {
+          return <Done />;
+        } else {
+          return <Close />;
+        }
+      }}}},
+      {nom: "info_courriel", label: {name: "Courriel", options: {customBodyRender: (value)=>{
+        if (value == 1) {
+          return <Done />;
+        } else {
+          return <Close />;
+        }
+      }}}},
+      {nom: "actif", label: {name: "Actif", options: {customBodyRender: (value)=>{
+        if (value == 1) {
+          return <Done />;
+        } else {
+          return <Close />;
+        }
+      }}}},
+      {nom: "militant", label: {name: "Militant", options: {customBodyRender: (value)=>{
+        if (value == 1) {
+          return <Done />;
+        } else {
+          return <Close />;
+        }
+      }}}},
+      {nom: "regulier", label: {name: "Régulier", options: {customBodyRender: (value)=>{
+        if (value == 1) {
+          return <Done />;
+        } else {
+          return <Close />;
+        }
+      }}}},
       {nom: "id", label: {name: "Éditer", options: {filter: false, customBodyRender: (value, tableMeta)=>{
         return (<IconButton index={tableMeta.columnIndex} onClick={this.selectionnerMembre.bind(this,value)}><Edit/></IconButton>);
       }}}}
@@ -311,6 +403,30 @@ class Membres extends React.Component {
               options={options}
             />
           }
+        </Grid>
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader title="Générer les étiquettes" />
+            <CardContent>
+              <FilePicker
+                extensions={['csv']}
+                onChange={this.openFile.bind(this, false)}
+                onError={this.openFile.bind(this, true)}
+              >
+                <div>
+                  <Button>
+                    Choisir le csv
+                  </Button>
+                  {this.state.file.name}
+                </div>
+              </FilePicker>
+            </CardContent>
+            <CardActions>
+              <Button disabled={!this.state.telechargerEtiquettes} onClick={this.telechargerEtiquettes.bind(this)}>
+                Télécharger les étiquettes
+              </Button>
+            </CardActions>
+          </Card>
         </Grid>
       </Grid>
     );

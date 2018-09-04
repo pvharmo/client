@@ -23,6 +23,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Gavel from '@material-ui/icons/Gavel';
 import People from '@material-ui/icons/People';
+import Dashboard from '@material-ui/icons/Dashboard';
 import SettingsSharp from '@material-ui/icons/SettingsSharp';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -63,9 +64,13 @@ class App extends React.Component {
   constructor() {
     super();
 
+    socket.on("loggedIn", ()=>{this.setState({login: false});});
+    socket.on("loggin-error", ()=>{this.setState({loginError: true});});
+
     this.state = {
       auth: true,
       anchorEl: null,
+      loginError: false,
       login: true,
       password: ""
     };
@@ -88,7 +93,6 @@ class App extends React.Component {
   };
 
   login() {
-    this.setState({login: false});
     socket.emit('authentication', {password: this.state.password});
   }
 
@@ -109,11 +113,12 @@ class App extends React.Component {
             >
             <DialogTitle id="confirmation-dialog-title">Connexion</DialogTitle>
             <DialogContent>
+              {this.state.loginError && "Une erreur s'est produite"}
               <TextField type="password" onChange={this.handlePassword.bind(this)} />
             </DialogContent>
             <DialogActions>
               <Button onClick={this.login.bind(this)} color="primary">
-                Connexion
+                Se connecter
               </Button>
             </DialogActions>
           </Dialog>
@@ -159,6 +164,14 @@ class App extends React.Component {
             <List
               component="nav"
               subheader={<ListSubheader component="div">Menu</ListSubheader>}>
+              <a target="_blank" href="http://localhost:9999/r/4">
+                <ListItem button>
+                  <ListItemIcon>
+                    <Dashboard />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Tableau de bord" />
+                </ListItem>
+              </a>
               <NavLink to="/membres">
                 <ListItem button>
                   <ListItemIcon>
