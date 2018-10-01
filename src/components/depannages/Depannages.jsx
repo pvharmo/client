@@ -2,6 +2,7 @@ import React from "react";
 import Form from "../form/Form.jsx";
 import DataTable from "mui-datatables";
 import { socket } from '../../socket';
+import moment from "moment";
 
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -100,6 +101,12 @@ class Depannages extends React.Component {
     if (this.state.depannageSelectionne.id) {
       socket.emit("enregistrer-depannage", infos);
     } else {
+      if (infos.date_depannage) {
+        infos.date_depannage = infos.date_depannage.format("YYYY-MM-DD HH:mm:ss");
+      } else {
+        infos.date_depannage = moment().format("YYYY-MM-DD HH:mm:ss");
+      }
+      console.log(infos);
       socket.emit("nouveau-depannage", infos);
     }
   }
@@ -210,7 +217,9 @@ class Depannages extends React.Component {
         {type: "select", name: "motif", label: "Motif", width: {xs:9}, items: this.state.motif},
         {type: "select", name: "statut_aide_sociale", label: "Statut aide sociale", width: {xs:12}, items: this.state.statut},
         {type: "select", name: "situation_menage", label: "Situation du ménage", width: {xs:6}, items: [
-          {label: "À faire", value: ""}
+          {label: "Célibataire", value: "celibataire"},
+          {label: "Couple", value:"couple"},
+          {label: "Unifamilial", value: "unifamilial"}
         ]},
         {type: "number", name: "nb_adultes", label: "Nombre d'adultes", width: {xs:3}},
         {type: "number", name: "nb_enfants", label: "Nombre d'enfant", width: {xs:3}},

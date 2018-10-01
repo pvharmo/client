@@ -346,6 +346,8 @@ class Membres extends React.Component {
       rowsPerPageOptions: [6, 12, 24]
     };
 
+    console.log(this.state.listeMembres);
+
     return (
       <Grid container spacing={16} >
         <Grid item xs={7}>

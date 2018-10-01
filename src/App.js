@@ -164,7 +164,7 @@ class App extends React.Component {
             <List
               component="nav"
               subheader={<ListSubheader component="div">Menu</ListSubheader>}>
-              <a target="_blank" href="http://localhost:9999/r/4">
+              <a target="_blank" href="http://172.104.213.198:8080/">
                 <ListItem button>
                   <ListItemIcon>
                     <Dashboard />

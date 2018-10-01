@@ -209,7 +209,7 @@ class Form extends React.Component {
 
   submitButton(field) {
     return (
-      <Button type="submit" onClick={this.submit.bind(this)} >{field.label}</Button>
+      <Button color="primary" type="submit" onClick={this.submit.bind(this)} >{field.label}</Button>
     );
   }
 
