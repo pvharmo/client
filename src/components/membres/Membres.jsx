@@ -96,6 +96,12 @@ class Membres extends React.Component {
   }
 
   enregistrerRenouvellement(values) {
+    if (values.dons === undefined) {
+      values.dons = 0;
+    }
+    if (values.commentaires === undefined) {
+      values.commentaires = "";
+    }
     if (this.state.membreSelectionne.id) {
       socket.emit("renouvellement", this.state.membreSelectionne.id, values, this.state.membreSelectionne.regulier);
     } else {
@@ -242,8 +248,8 @@ class Membres extends React.Component {
       {name: "actif", label: "Actif", type: "checkbox", width: {xs: 2}},
       {name: "militant", label: "Militant", type: "checkbox", width: {xs: 2}},
       {name: "regulier", label: "Type", type: "select", width:{xs:2}, items: [
-        {label: "Régulier", value: "TRUE"},
-        {label: "Allié", value: "FALSE"}
+        {label: "Régulier", value: 1},
+        {label: "Allié", value: 0}
       ]},
       {name: "commentaires", label: "Commentaires", type: "text", options: {multiline: true, rows: 4}},
       {type: "submit", label: "Enregistrer", width: {xs: 2}},
@@ -345,8 +351,6 @@ class Membres extends React.Component {
       rowsPerPage: 6,
       rowsPerPageOptions: [6, 12, 24]
     };
-
-    console.log(this.state.listeMembres);
 
     return (
       <Grid container spacing={16} >
