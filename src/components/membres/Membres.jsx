@@ -249,7 +249,7 @@ class Membres extends React.Component {
       {name: "militant", label: "Militant", type: "checkbox", width: {xs: 2}},
       {name: "regulier", label: "Type", type: "select", width:{xs:2}, items: [
         {label: "Régulier", value: 1},
-        {label: "Allié", value: 0}
+        {label: "Allié", value: 2}
       ]},
       {name: "commentaires", label: "Commentaires", type: "text", options: {multiline: true, rows: 4}},
       {type: "submit", label: "Enregistrer", width: {xs: 2}},

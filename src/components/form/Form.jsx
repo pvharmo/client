@@ -3,7 +3,7 @@ import React from "react";
 import moment from 'moment';
 import 'moment/locale/fr';
 
-import MuiPickersUtilsProvider from 'material-ui-pickers/utils/MuiPickersUtilsProvider';
+import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import MomentUtils from 'material-ui-pickers/utils/moment-utils';
 import DateTimePicker from 'material-ui-pickers/DateTimePicker';
 import { withStyles } from '@material-ui/core/styles';
